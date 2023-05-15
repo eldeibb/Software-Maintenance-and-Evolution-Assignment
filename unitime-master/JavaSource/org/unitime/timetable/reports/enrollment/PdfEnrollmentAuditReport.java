@@ -15,8 +15,8 @@
  *
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
-*/
+ *
+ */
 package org.unitime.timetable.reports.enrollment;
 
 import java.io.File;
@@ -41,8 +41,8 @@ import com.lowagie.text.DocumentException;
  */
 public abstract class PdfEnrollmentAuditReport extends AbstractReport {
 	protected static ExaminationMessages MSG = Localization.create(ExaminationMessages.class);
-    public static Hashtable<String,Class> sRegisteredReports = new Hashtable<String, Class>();
-    public static String sAllRegisteredReports = "";
+	public static Hashtable<String,Class> sRegisteredReports = new Hashtable<String, Class>();
+	public static String sAllRegisteredReports = "";
 	protected static int studentIdLength = 10;
 	protected static int studentNameLength = 23;
 	protected static int offeringNameLength = 45;
@@ -51,19 +51,19 @@ public abstract class PdfEnrollmentAuditReport extends AbstractReport {
 	protected static int multipleClassesLength = 30;
 
 
-    static {
-        sRegisteredReports.put("struct", EnrollmentsViolatingCourseStructureAuditReport.class);
-        sRegisteredReports.put("missing", MissingCourseEnrollmentsAuditReport.class);
-        sRegisteredReports.put("many-subp", MultipleCourseEnrollmentsAuditReport.class);
-        sRegisteredReports.put("many-conf", MultipleConfigEnrollmentsAuditReport.class);
-        for (String report : sRegisteredReports.keySet())
-            sAllRegisteredReports += (sAllRegisteredReports.length()>0?",":"") + report;
-    }
+	static {
+		sRegisteredReports.put("struct", EnrollmentsViolatingCourseStructureAuditReport.class);
+		sRegisteredReports.put("missing", MissingCourseEnrollmentsAuditReport.class);
+		sRegisteredReports.put("many-subp", MultipleCourseEnrollmentsAuditReport.class);
+		sRegisteredReports.put("many-conf", MultipleConfigEnrollmentsAuditReport.class);
+		for (String report : sRegisteredReports.keySet())
+			sAllRegisteredReports += (sAllRegisteredReports.length()>0?",":"") + report;
+	}
 
-    private Session iSession = null;
-    private boolean iShowId;
-    private boolean iShowName;
-    private TreeSet<SubjectArea> iSubjectAreas;
+	private Session iSession = null;
+	private boolean iShowId;
+	private boolean iShowName;
+	private TreeSet<SubjectArea> iSubjectAreas;
 
 	/**
 	 * @param mode
@@ -76,199 +76,198 @@ public abstract class PdfEnrollmentAuditReport extends AbstractReport {
 	 * @throws DocumentException
 	 */
 	public PdfEnrollmentAuditReport(int mode, File file, String title,
-			String title2, String subject, String session) throws IOException,
+									String title2, String subject, String session) throws IOException,
 			DocumentException {
 		super(mode, file, title, title2, subject, session);
 	}
 
-    public PdfEnrollmentAuditReport(int mode, String title, File file, Session session, TreeSet<SubjectArea> subjectAreas, String subTitle) throws DocumentException, IOException {
-        super(mode, file, title, subTitle, title + " -- " + session.getLabel(), session.getLabel());
-        this.iSession = session;
-        this.iSubjectAreas = subjectAreas;
-    }
-
-    public PdfEnrollmentAuditReport(int mode, String title, File file, Session session) throws DocumentException, IOException {
-    	super(mode, file, title, "", title + " -- " + session.getLabel(), session.getLabel());
-        iSession = session;
-        this.iSubjectAreas = null;
-    }
-
-   public abstract void printReport() throws DocumentException;
-
-/**
- * @return the iSession
- */
-public Session getSession() {
-	return iSession;
-}
-
-/**
- * @param iSession the iSession to set
- */
-public void setSession(Session session) {
-	this.iSession = session;
-}
-
-/**
- * @return the showId
- */
-public boolean isShowId() {
-	return iShowId;
-}
-
-/**
- * @param showId the showId to set
- */
-public void setShowId(boolean showId) {
-	this.iShowId = showId;
-}
-
-/**
- * @return the showName
- */
-public boolean isShowName() {
-	return iShowName;
-}
-
-/**
- * @param showName the showName to set
- */
-public void setShowName(boolean showName) {
-	this.iShowName = showName;
-}
-
-/**
- * @return the subjectAreas
- */
-public TreeSet<SubjectArea> getSubjectAreas() {
-	return iSubjectAreas;
-}
-
-/**
- * @param subjectAreas the subjectAreas to set
- */
-public void setSubjectAreas(TreeSet<SubjectArea> subjectAreas) {
-	this.iSubjectAreas = subjectAreas;
-}
-
-
-    protected abstract String createQueryString(TreeSet<SubjectArea> subjectAreas);
-
-	public abstract Vector<Line> SendEmailReport() throws DocumentException;
-
-	protected List getAuditResults(TreeSet<SubjectArea> subjectAreas){
-
-	String query = createQueryString(subjectAreas);
-	return(StudentClassEnrollmentDAO.getInstance().getQuery(query).setLong("sessId", getSession().getUniqueId().longValue()).list());
-
-}
-
-protected Line buildBaseAuditLine(EnrollmentAuditResult result) {
-	return new Line(
-			(isShowId() ? lpad(result.getStudentId(), ' ', studentIdLength) : new Cell()),
-			(isShowName() ? rpad(result.getStudentName(), ' ', studentNameLength) : new Cell()),
-			rpad(result.getOffering(), ' ', offeringNameLength)
-			);
-}
-
-protected Line[] getBaseHeader(){
-	return new Line[] {
-			new Line(
-					(isShowId() ? rpad("", ' ', studentIdLength) : new Cell()),
-					(isShowName() ? rpad("", ' ', studentNameLength) : new Cell()),
-					rpad("", ' ', offeringNameLength)
-				),
-			new Line(
-					(isShowId() ? rpad(MSG.lrStudentID(), ' ', studentIdLength) : new Cell()),
-					(isShowName() ? rpad(MSG.lrStudentName(), ' ', studentNameLength) : new Cell()),
-					rpad(MSG.lrOffering(), ' ', offeringNameLength)
-				),
-			new Line(
-					(isShowId() ? rpad("", '-', studentIdLength) : new Cell()),
-					(isShowName() ? rpad("", '-', studentNameLength) : new Cell()),
-					rpad("", '-', offeringNameLength)
-				)
-	};
-}
-
-protected abstract class EnrollmentAuditResult  {
-	private String studentId;
-	private String studentLastName;
-	private String studentFirstName;
-	private String studentMiddleName;
-	private String subjectArea;
-	private String courseNbr;
-	private String title;
-
-
-	public EnrollmentAuditResult(Object[] result) {
-		super();
-		if (result[0] != null) this.studentId = result[0].toString().trim();
-		if (result[1] != null) this.studentLastName = result[1].toString();
-		if (result[2] != null) this.studentFirstName = result[2].toString();
-		if (result[3] != null) this.studentMiddleName = result[3].toString();
-		if (result[4] != null) this.subjectArea = result[4].toString();
-		if (result[5] != null) this.courseNbr = result[5].toString();
-		if (result[6] != null) this.title = result[6].toString();
+	public PdfEnrollmentAuditReport(int mode, String title, File file, Session session, TreeSet<SubjectArea> subjectAreas, String subTitle) throws DocumentException, IOException {
+		super(mode, file, title, subTitle, title + " -- " + session.getLabel(), session.getLabel());
+		this.iSession = session;
+		this.iSubjectAreas = subjectAreas;
 	}
-	
-	public String getStudentName(){
-		StringBuilder sb = new StringBuilder();
-		if (studentLastName != null && studentLastName.length() > 0) {
-			sb.append(studentLastName);
-			if (studentFirstName != null && studentFirstName.length() > 0) {
-				sb.append(", ")
-				  .append(studentFirstName.charAt(0));
-				if (studentMiddleName != null && studentMiddleName.length() > 0){
-					sb.append(" ")
-					  .append(studentMiddleName.charAt(0));
-				}
-			}
-		}
-		String name = sb.toString();
-		if (name.length() > studentNameLength){
-			name = name.substring(0, studentNameLength);
-		}
-		return(name);
+
+	public PdfEnrollmentAuditReport(int mode, String title, File file, Session session) throws DocumentException, IOException {
+		super(mode, file, title, "", title + " -- " + session.getLabel(), session.getLabel());
+		iSession = session;
+		this.iSubjectAreas = null;
+	}
+
+	public abstract void printReport() throws DocumentException;
+
+	/**
+	 * @return the iSession
+	 */
+	public Session getSession() {
+		return iSession;
 	}
 
 	/**
-	 * @return the studentId
+	 * @param iSession the iSession to set
 	 */
-	public String getStudentId() {
-		return studentId;
+	public void setSession(Session session) {
+		this.iSession = session;
 	}
-	
-	public String getOffering(){
-		StringBuilder sb = new StringBuilder();
-		sb.append(subjectArea)
-		  .append(" ")
-		  .append(courseNbr)
-		  .append(" - ")
-		  .append(title);
-		String title = sb.toString();
-		if (title.length() > offeringNameLength){
-			title = title.substring(0, offeringNameLength);
+
+	/**
+	 * @return the showId
+	 */
+	public boolean isShowId() {
+		return iShowId;
+	}
+
+	/**
+	 * @param showId the showId to set
+	 */
+	public void setShowId(boolean showId) {
+		this.iShowId = showId;
+	}
+
+	/**
+	 * @return the showName
+	 */
+	public boolean isShowName() {
+		return iShowName;
+	}
+
+	/**
+	 * @param showName the showName to set
+	 */
+	public void setShowName(boolean showName) {
+		this.iShowName = showName;
+	}
+
+	/**
+	 * @return the subjectAreas
+	 */
+	public TreeSet<SubjectArea> getSubjectAreas() {
+		return iSubjectAreas;
+	}
+
+	/**
+	 * @param subjectAreas the subjectAreas to set
+	 */
+	public void setSubjectAreas(TreeSet<SubjectArea> subjectAreas) {
+		this.iSubjectAreas = subjectAreas;
+	}
+
+	public abstract Vector<Line> SendEmailReport() throws DocumentException;
+
+	protected abstract String createQueryString(TreeSet<SubjectArea> subjectAreas);
+
+	protected List getAuditResults(TreeSet<SubjectArea> subjectAreas){
+
+		String query = createQueryString(subjectAreas);
+		return(StudentClassEnrollmentDAO.getInstance().getQuery(query).setLong("sessId", getSession().getUniqueId().longValue()).list());
+
+	}
+
+	protected Line buildBaseAuditLine(EnrollmentAuditResult result) {
+		return new Line(
+				(isShowId() ? lpad(result.getStudentId(), ' ', studentIdLength) : new Cell()),
+				(isShowName() ? rpad(result.getStudentName(), ' ', studentNameLength) : new Cell()),
+				rpad(result.getOffering(), ' ', offeringNameLength)
+		);
+	}
+
+	protected Line[] getBaseHeader(){
+		return new Line[] {
+				new Line(
+						(isShowId() ? rpad("", ' ', studentIdLength) : new Cell()),
+						(isShowName() ? rpad("", ' ', studentNameLength) : new Cell()),
+						rpad("", ' ', offeringNameLength)
+				),
+				new Line(
+						(isShowId() ? rpad(MSG.lrStudentID(), ' ', studentIdLength) : new Cell()),
+						(isShowName() ? rpad(MSG.lrStudentName(), ' ', studentNameLength) : new Cell()),
+						rpad(MSG.lrOffering(), ' ', offeringNameLength)
+				),
+				new Line(
+						(isShowId() ? rpad("", '-', studentIdLength) : new Cell()),
+						(isShowName() ? rpad("", '-', studentNameLength) : new Cell()),
+						rpad("", '-', offeringNameLength)
+				)
+		};
+	}
+
+	protected abstract class EnrollmentAuditResult  {
+		private String studentId;
+		private String studentLastName;
+		private String studentFirstName;
+		private String studentMiddleName;
+		private String subjectArea;
+		private String courseNbr;
+		private String title;
+
+
+		public EnrollmentAuditResult(Object[] result) {
+			super();
+			if (result[0] != null) this.studentId = result[0].toString().trim();
+			if (result[1] != null) this.studentLastName = result[1].toString();
+			if (result[2] != null) this.studentFirstName = result[2].toString();
+			if (result[3] != null) this.studentMiddleName = result[3].toString();
+			if (result[4] != null) this.subjectArea = result[4].toString();
+			if (result[5] != null) this.courseNbr = result[5].toString();
+			if (result[6] != null) this.title = result[6].toString();
 		}
-		return(title);
-	}
-	
-	protected String createClassString(String itypeStr, String nbrStr, String suffixStr){
-		StringBuilder sb = new StringBuilder();
-		sb.append(itypeStr);
-		if (nbrStr.length() != 0){
-			sb.append(" ")
-			  .append(nbrStr);
-			if (!suffixStr.trim().equals("-")){
-				sb.append("(")
-				  .append(suffixStr)
-				  .append(")");
+
+		public String getStudentName(){
+			StringBuilder sb = new StringBuilder();
+			if (studentLastName != null && studentLastName.length() > 0) {
+				sb.append(studentLastName);
+				if (studentFirstName != null && studentFirstName.length() > 0) {
+					sb.append(", ")
+							.append(studentFirstName.charAt(0));
+					if (studentMiddleName != null && studentMiddleName.length() > 0){
+						sb.append(" ")
+								.append(studentMiddleName.charAt(0));
+					}
+				}
 			}
+			String name = sb.toString();
+			if (name.length() > studentNameLength){
+				name = name.substring(0, studentNameLength);
+			}
+			return(name);
 		}
-		return(sb.toString());
+
+		/**
+		 * @return the studentId
+		 */
+		public String getStudentId() {
+			return studentId;
+		}
+
+		public String getOffering(){
+			StringBuilder sb = new StringBuilder();
+			sb.append(subjectArea)
+					.append(" ")
+					.append(courseNbr)
+					.append(" - ")
+					.append(title);
+			String title = sb.toString();
+			if (title.length() > offeringNameLength){
+				title = title.substring(0, offeringNameLength);
+			}
+			return(title);
+		}
+
+		protected String createClassString(String itypeStr, String nbrStr, String suffixStr){
+			StringBuilder sb = new StringBuilder();
+			sb.append(itypeStr);
+			if (nbrStr.length() != 0){
+				sb.append(" ")
+						.append(nbrStr);
+				if (!suffixStr.trim().equals("-")){
+					sb.append("(")
+							.append(suffixStr)
+							.append(")");
+				}
+			}
+			return(sb.toString());
+		}
+
 	}
-	
-}
 
 
 }
