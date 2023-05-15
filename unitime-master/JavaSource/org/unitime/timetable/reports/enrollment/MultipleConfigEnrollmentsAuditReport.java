@@ -15,8 +15,8 @@
  *
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
-*/
+ *
+ */
 package org.unitime.timetable.reports.enrollment;
 
 import java.io.File;
@@ -40,34 +40,48 @@ import com.lowagie.text.DocumentException;
  */
 public class MultipleConfigEnrollmentsAuditReport extends PdfEnrollmentAuditReport {
 
-    public MultipleConfigEnrollmentsAuditReport(int mode, File file, Session session, TreeSet<SubjectArea> subjectAreas, String subTitle) throws DocumentException, IOException {
-        super(mode, getTitle(), file, session, subjectAreas, subTitle);
-    }
+	public MultipleConfigEnrollmentsAuditReport(int mode, File file, Session session, TreeSet<SubjectArea> subjectAreas, String subTitle) throws DocumentException, IOException {
+		super(mode, getTitle(), file, session, subjectAreas, subTitle);
+	}
 
-    public MultipleConfigEnrollmentsAuditReport(int mode, File file, Session session) throws DocumentException, IOException {
-    	super(mode, getTitle(), file, session);
-    }
+	public MultipleConfigEnrollmentsAuditReport(int mode, File file, Session session) throws DocumentException, IOException {
+		super(mode, getTitle(), file, session);
+	}
 
 	@Override
 	public void printReport() throws DocumentException {
 		setHeaderLine(buildHeaderString());
-        List results = getAuditResults(getSubjectAreas());
-        Vector<Line> lines = new Vector<Line>();
-        Iterator it = results.iterator();
-        while(it.hasNext()) {
-        	MultipleConfigEnrollmentsAuditResult result = new MultipleConfigEnrollmentsAuditResult((Object[]) it.next());
-        	lines.add(buildLineString(result));
-        }
-        printHeader();
-        for (Line str : lines) {
-                println(str);
-        }
-        if (!lines.isEmpty()){
-        	lastPage();
-        }
+		List results = getAuditResults(getSubjectAreas());
+		Vector<Line> lines = new Vector<Line>();
+		Iterator it = results.iterator();
+		while(it.hasNext()) {
+			MultipleConfigEnrollmentsAuditResult result = new MultipleConfigEnrollmentsAuditResult((Object[]) it.next());
+			lines.add(buildLineString(result));
+		}
+		printHeader();
+		for (Line str : lines) {
+			println(str);
+		}
+		if (!lines.isEmpty()){
+			lastPage();
+		}
 
 	}
-	
+	@Override
+	public Vector<Line> SendEmailReport() throws DocumentException {
+		setHeaderLine(buildHeaderString());
+		List results = getAuditResults(getSubjectAreas());
+		Vector<Line> lines = new Vector<Line>();
+		Iterator it = results.iterator();
+		while(it.hasNext()) {
+			MultipleConfigEnrollmentsAuditResult result = new MultipleConfigEnrollmentsAuditResult((Object[]) it.next());
+			lines.add(buildLineString(result));
+		}
+		if (!lines.isEmpty()){
+			lastPage();
+		}
+		return lines;
+	}
 	@SuppressWarnings("unchecked")
 	@Override
 	protected List getAuditResults(TreeSet<SubjectArea> subjectAreas){
@@ -83,10 +97,10 @@ public class MultipleConfigEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 		for (SubjectArea sa : subjects){
 			Debug.info(getTitle() + " - Checking Subject Area:  " + sa.getSubjectAreaAbbreviation());
 			results.addAll(StudentClassEnrollmentDAO.getInstance()
-				 .getQuery(query)
-				 .setLong("sessId", getSession().getUniqueId().longValue())
-				 .setLong("subjectId", sa.getUniqueId().longValue())
-				 .list());
+					.getQuery(query)
+					.setLong("sessId", getSession().getUniqueId().longValue())
+					.setLong("subjectId", sa.getUniqueId().longValue())
+					.list());
 		}
 		return(results);
 	}
@@ -98,19 +112,19 @@ public class MultipleConfigEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 	@SuppressWarnings("unchecked")
 	@Override
 	protected String createQueryString(TreeSet<SubjectArea> subjectAreas) {
-		
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct s.externalUniqueId, s.lastName, s.firstName, s.middleName,")
-		  .append(" sce.courseOffering.subjectArea.subjectAreaAbbreviation, sce.courseOffering.courseNbr, sce.courseOffering.title,")
-		  .append(" s.uniqueId, sce.courseOffering.uniqueId")
-		  .append(" from Student s inner join s.classEnrollments as sce")
-		  .append(" where s.session.uniqueId = :sessId")
-		  .append(" and sce.courseOffering.subjectArea.uniqueId = :subjectId")
-		  .append(" and 1 < ( select count(distinct cfg1) from StudentClassEnrollment sce1")
-		  .append(" inner join sce1.clazz.schedulingSubpart.instrOfferingConfig cfg1")
-		  .append(" where sce1.courseOffering = sce.courseOffering and sce1.student = sce.student)")
-		  .append(" order by sce.courseOffering.subjectArea.subjectAreaAbbreviation, sce.courseOffering.courseNbr,")
-		  .append(" sce.courseOffering.title");
+				.append(" sce.courseOffering.subjectArea.subjectAreaAbbreviation, sce.courseOffering.courseNbr, sce.courseOffering.title,")
+				.append(" s.uniqueId, sce.courseOffering.uniqueId")
+				.append(" from Student s inner join s.classEnrollments as sce")
+				.append(" where s.session.uniqueId = :sessId")
+				.append(" and sce.courseOffering.subjectArea.uniqueId = :subjectId")
+				.append(" and 1 < ( select count(distinct cfg1) from StudentClassEnrollment sce1")
+				.append(" inner join sce1.clazz.schedulingSubpart.instrOfferingConfig cfg1")
+				.append(" where sce1.courseOffering = sce.courseOffering and sce1.student = sce.student)")
+				.append(" order by sce.courseOffering.subjectArea.subjectAreaAbbreviation, sce.courseOffering.courseNbr,")
+				.append(" sce.courseOffering.title");
 
 		if (isShowId()){
 			sb.append(", s.externalUniqueId");
@@ -119,13 +133,13 @@ public class MultipleConfigEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 		}
 
 		return(sb.toString());
-	
+
 	}
-	
+
 	private Line buildLineString(MultipleConfigEnrollmentsAuditResult result) {
 		return new Line(buildBaseAuditLine(result), new Line(
 				rpad(result.configsListStr(), ' ', multipleClassesLength)
-				));
+		));
 	}
 
 	private Line[] buildHeaderString(){
@@ -156,11 +170,11 @@ public class MultipleConfigEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 			if (result[8] != null) this.courseId = Long.valueOf(result[8].toString());
 			findConfigs();
 		}
-				
+
 		private void findConfigs(){
 			StringBuilder sb = new StringBuilder();
 			sb.append("select distinct sce.clazz.schedulingSubpart.instrOfferingConfig")
-			  .append(" from StudentClassEnrollment sce where sce.student.uniqueId = :studId and sce.courseOffering.uniqueId = :courseId");
+					.append(" from StudentClassEnrollment sce where sce.student.uniqueId = :studId and sce.courseOffering.uniqueId = :courseId");
 			Iterator it = StudentClassEnrollmentDAO.getInstance()
 					.getQuery(sb.toString())
 					.setLong("studId", studentUniqueId)
@@ -170,9 +184,9 @@ public class MultipleConfigEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 				InstrOfferingConfig result = (InstrOfferingConfig) it.next();
 				configs.add(result.getName());
 			}
-			
+
 		}
-		
+
 		public String configsListStr(){
 			StringBuilder sb = new StringBuilder();
 			boolean first = true;
@@ -186,7 +200,7 @@ public class MultipleConfigEnrollmentsAuditReport extends PdfEnrollmentAuditRepo
 			}
 			return(sb.toString());
 		}
-		
+
 	}
 
 }
