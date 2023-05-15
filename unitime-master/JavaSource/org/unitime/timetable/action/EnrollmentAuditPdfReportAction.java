@@ -104,6 +104,7 @@ public class EnrollmentAuditPdfReportAction extends UniTimeAction<EnrollmentAudi
                         report.setShowId(form.getExternalId());
                         report.setShowName(form.getStudentName());
                         report.printReport();
+
                         report.close();
                         output.put(reportName+ext,file);
                     } else {
@@ -129,6 +130,7 @@ public class EnrollmentAuditPdfReportAction extends UniTimeAction<EnrollmentAudi
                         report.setShowId(form.getExternalId());
                         report.setShowName(form.getStudentName());
                         report.printReport();
+                        SRE.sendEmail(report.SendEmailReport()," ");
                         report.close();
                         output.put(subjAbbvs+"_"+reportName+ext,file);
                     }

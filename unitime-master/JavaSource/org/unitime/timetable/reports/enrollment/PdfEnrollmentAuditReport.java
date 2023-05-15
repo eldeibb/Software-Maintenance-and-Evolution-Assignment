@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.Vector;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
@@ -148,11 +149,14 @@ public TreeSet<SubjectArea> getSubjectAreas() {
  */
 public void setSubjectAreas(TreeSet<SubjectArea> subjectAreas) {
 	this.iSubjectAreas = subjectAreas;
-} 
+}
 
-protected abstract String createQueryString(TreeSet<SubjectArea> subjectAreas);
 
-protected List getAuditResults(TreeSet<SubjectArea> subjectAreas){
+    protected abstract String createQueryString(TreeSet<SubjectArea> subjectAreas);
+
+	public abstract Vector<Line> SendEmailReport() throws DocumentException;
+
+	protected List getAuditResults(TreeSet<SubjectArea> subjectAreas){
 
 	String query = createQueryString(subjectAreas);
 	return(StudentClassEnrollmentDAO.getInstance().getQuery(query).setLong("sessId", getSession().getUniqueId().longValue()).list());

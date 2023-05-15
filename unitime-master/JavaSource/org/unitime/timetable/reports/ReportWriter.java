@@ -37,6 +37,7 @@ public interface ReportWriter {
 	public Line[] getHeader();
 		
 	public void printLine(Line line) throws DocumentException;
+
 	
 	public void close() throws IOException, DocumentException;
 	
