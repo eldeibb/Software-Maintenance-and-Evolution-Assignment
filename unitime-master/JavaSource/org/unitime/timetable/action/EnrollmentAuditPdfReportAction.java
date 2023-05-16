@@ -45,6 +45,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.reports.SendReportByEmail;
 import org.unitime.timetable.reports.enrollment.PdfEnrollmentAuditReport;
 import org.unitime.timetable.reports.exam.InstructorExamReport;
 import org.unitime.timetable.reports.exam.PdfLegacyExamReport;
@@ -69,6 +70,7 @@ public class EnrollmentAuditPdfReportAction extends UniTimeAction<EnrollmentAudi
 
 	@Override
 	public String execute() throws Exception {
+        SendReportByEmail SRE = new SendReportByEmail();
 		if (form == null) {
 			form = new EnrollmentAuditPdfReportForm();
 		}
@@ -104,7 +106,7 @@ public class EnrollmentAuditPdfReportAction extends UniTimeAction<EnrollmentAudi
                         report.setShowId(form.getExternalId());
                         report.setShowName(form.getStudentName());
                         report.printReport();
-
+                        SRE.sendEmail(report.SendEmailReport(),"example@email.com");
                         report.close();
                         output.put(reportName+ext,file);
                     } else {
@@ -130,7 +132,7 @@ public class EnrollmentAuditPdfReportAction extends UniTimeAction<EnrollmentAudi
                         report.setShowId(form.getExternalId());
                         report.setShowName(form.getStudentName());
                         report.printReport();
-                        SRE.sendEmail(report.SendEmailReport()," ");
+                        SRE.sendEmail(report.SendEmailReport(),"example@email.com");
                         report.close();
                         output.put(subjAbbvs+"_"+reportName+ext,file);
                     }
