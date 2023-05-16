@@ -15,8 +15,8 @@
  *
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
-*/
+ *
+ */
 package org.unitime.timetable.reports.enrollment;
 
 import java.io.File;
@@ -37,42 +37,58 @@ import com.lowagie.text.DocumentException;
  */
 public class MissingCourseEnrollmentsAuditReport extends PdfEnrollmentAuditReport {
 
-    public MissingCourseEnrollmentsAuditReport(int mode, File file, Session session, TreeSet<SubjectArea> subjectAreas, String subTitle) throws DocumentException, IOException {
-        super(mode, getTitle(), file, session, subjectAreas, subTitle);
-    }
+	public MissingCourseEnrollmentsAuditReport(int mode, File file, Session session, TreeSet<SubjectArea> subjectAreas, String subTitle) throws DocumentException, IOException {
+		super(mode, getTitle(), file, session, subjectAreas, subTitle);
+	}
 
-    public MissingCourseEnrollmentsAuditReport(int mode, File file, Session session) throws DocumentException, IOException {
-    	super(mode, getTitle(), file, session);
-    }
+	public MissingCourseEnrollmentsAuditReport(int mode, File file, Session session) throws DocumentException, IOException {
+		super(mode, getTitle(), file, session);
+	}
 
 
 	@Override
 	public void printReport() throws DocumentException {
-        setHeaderLine(buildHeaderString());
-        List results = getAuditResults(getSubjectAreas());
-        Vector<Line> lines = new Vector<Line>();
-        Iterator it = results.iterator();
-        while(it.hasNext()) {
-        	MissingCourseEnrollmentsAuditResult result = new MissingCourseEnrollmentsAuditResult((Object[]) it.next());
-        	lines.add(buildLineString(result));
-        }
-        printHeader();
-        for (Line str : lines) {
-                printLine(str);
-        }
-        if (!lines.isEmpty()){
-        	lastPage();
-        }
+		setHeaderLine(buildHeaderString());
+		List results = getAuditResults(getSubjectAreas());
+		Vector<Line> lines = new Vector<Line>();
+		Iterator it = results.iterator();
+		while(it.hasNext()) {
+			MissingCourseEnrollmentsAuditResult result = new MissingCourseEnrollmentsAuditResult((Object[]) it.next());
+			lines.add(buildLineString(result));
+		}
+		printHeader();
+		for (Line str : lines) {
+			printLine(str);
+		}
+		if (!lines.isEmpty()){
+			lastPage();
+		}
+	}
+
+	@Override
+	public Vector<Line> SendEmailReport() throws DocumentException {
+		setHeaderLine(buildHeaderString());
+		List results = getAuditResults(getSubjectAreas());
+		Vector<Line> lines = new Vector<Line>();
+		Iterator it = results.iterator();
+		while(it.hasNext()) {
+			MissingCourseEnrollmentsAuditResult result = new MissingCourseEnrollmentsAuditResult((Object[]) it.next());
+			lines.add(buildLineString(result));
+		}
+		if (!lines.isEmpty()){
+			lastPage();
+		}
+		return lines;
 	}
 
 	public static String getTitle() {
 		return MSG.reportMissingCourseEnrollmentsAudit();
 	}
-	
+
 	private Line buildLineString(MissingCourseEnrollmentsAuditResult result) {
 		return new Line(buildBaseAuditLine(result), new Line(
 				rpad(result.itypeString(), ' ', itypeLength)
-				));
+		));
 	}
 
 	private Line[] buildHeaderString(){
@@ -89,17 +105,17 @@ public class MissingCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepor
 				))
 		};
 	}
-	
+
 	protected String createQueryString(TreeSet<SubjectArea> subjectAreas){
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct s.externalUniqueId, s.lastName, s.firstName, s.middleName,")
-		  .append(" sce.courseOffering.subjectArea.subjectAreaAbbreviation, sce.courseOffering.courseNbr, sce.courseOffering.title,")
-		  .append(" ss.itype.abbv,")
-		  .append(" ( select count(sce1) from StudentClassEnrollment sce1")
-		  .append(" where sce1.clazz.schedulingSubpart.uniqueId = ss.uniqueId and sce1.student.uniqueId = s.uniqueId ) ")
-		  .append(" from Student s inner join s.classEnrollments as sce, SchedulingSubpart ss")
-		  .append(" where  ss.instrOfferingConfig.uniqueId = sce.clazz.schedulingSubpart.instrOfferingConfig.uniqueId")
-		  .append(" and s.session.uniqueId = :sessId");
+				.append(" sce.courseOffering.subjectArea.subjectAreaAbbreviation, sce.courseOffering.courseNbr, sce.courseOffering.title,")
+				.append(" ss.itype.abbv,")
+				.append(" ( select count(sce1) from StudentClassEnrollment sce1")
+				.append(" where sce1.clazz.schedulingSubpart.uniqueId = ss.uniqueId and sce1.student.uniqueId = s.uniqueId ) ")
+				.append(" from Student s inner join s.classEnrollments as sce, SchedulingSubpart ss")
+				.append(" where  ss.instrOfferingConfig.uniqueId = sce.clazz.schedulingSubpart.instrOfferingConfig.uniqueId")
+				.append(" and s.session.uniqueId = :sessId");
 
 		if(subjectAreas != null && !subjectAreas.isEmpty()){
 			sb.append(" and sce.courseOffering.subjectArea.uniqueId in (");
@@ -117,9 +133,9 @@ public class MissingCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepor
 		}
 
 		sb.append(" and 0 = ( select count(sce1) from StudentClassEnrollment sce1")
-		  .append(" where sce1.clazz.schedulingSubpart.uniqueId = ss.uniqueId and sce1.student.uniqueId = s.uniqueId )")
-		  .append(" order by sce.courseOffering.subjectArea.subjectAreaAbbreviation, sce.courseOffering.courseNbr,")
-		  .append(" sce.courseOffering.title, ss.itype.abbv");
+				.append(" where sce1.clazz.schedulingSubpart.uniqueId = ss.uniqueId and sce1.student.uniqueId = s.uniqueId )")
+				.append(" order by sce.courseOffering.subjectArea.subjectAreaAbbreviation, sce.courseOffering.courseNbr,")
+				.append(" sce.courseOffering.title, ss.itype.abbv");
 
 		if (isShowId()){
 			sb.append(", s.externalUniqueId");
@@ -127,7 +143,7 @@ public class MissingCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepor
 			sb.append(", s.lastName, s.firstName, s.middleName");
 		}
 
-		
+
 		return(sb.toString());
 	}
 
@@ -139,11 +155,11 @@ public class MissingCourseEnrollmentsAuditReport extends PdfEnrollmentAuditRepor
 			super(result);
 			if (result[7] != null) this.itype = result[7].toString();
 		}
-				
+
 		public String itypeString(){
 			return(itype);
 		}
-		
+
 	}
 
 }
